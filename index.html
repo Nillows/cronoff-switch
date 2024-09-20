@@ -1,40 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cronjob Alias Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        label, input, textarea, button {
-            display: block;
-            margin-bottom: 10px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 5px;
-            font-size: 16px;
-        }
-        button {
-            padding: 10px;
-            font-size: 16px;
-        }
-        textarea {
-            height: 150px;
-        }
-    </style>
+    <title>Alias Generator</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Cronjob Alias Generator</h1>
-    <label for="cronjob">Cron Job Input:</label>
-    <input type="text" id="cronjob" placeholder="Enter your cron job string">
-    <label for="aliasname">Alias Name:</label>
-    <input type="text" id="aliasname" placeholder="Enter the alias name">
-    <button id="generate">Generate</button>
-    <label for="output">Generated Aliases:</label>
-    <textarea id="output" readonly></textarea>
+    <h1>Alias Generator</h1>
+    <div class="container">
+        <div class="left-side">
+            <label for="cronjob">Cron Job Input:</label>
+            <textarea id="cronjob" placeholder="Enter the cron job string"></textarea>
+            <br>
+            <label for="aliasname">Alias Name:</label>
+            <input type="text" id="aliasname" placeholder="Enter the alias name">
+            <br>
+            <button id="generate">Generate</button>
 
+            <!-- How to Use Section -->
+            <div class="how-to-use">
+                <h2>How to Use</h2>
+                <ol class ="ol">
+                    <li>
+                        <strong>Input Cron Job Line:</strong>
+                        <p>Copy the exact cron job line you wish to target from your crontab by running <code>crontab -l</code> in your terminal. Paste it into the "Cron Job Input" field above.</p>
+                    </li>
+                    <li>
+                        <strong>Choose an Alias Name:</strong>
+                        <p>Enter a simple name for your alias pair in the "Alias Name" field. This name will be used to create two aliases: one to turn the cron job off and one to turn it on. For example, if you enter <code>backup</code>, the aliases will be <code>backupoff</code> and <code>backupon</code>.</p>
+                    </li>
+                    <li>
+                        <strong>Generate Aliases:</strong>
+                        <p>Click the "Generate" button to create the alias pair. The generated aliases will appear on the right side.</p>
+                    </li>
+                    <li>
+                        <strong>Copy and Use the Aliases:</strong>
+                        <p>You can copy the aliases directly by clicking the "Copy Aliases" button, or you can copy the command to append the aliases to your <code>.bashrc</code> file by clicking the "Copy Command" button. Pasting and running this command in your terminal will make the aliases available in all new terminal sessions.</p>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <div class="right-side">
+            <label for="output">Generated Aliases:</label>
+            <textarea id="output" readonly></textarea>
+            <button id="copyAliases">Copy Aliases</button>
+            <br>
+            <label for="appendCommand">Command to Append Aliases to .bashrc:</label>
+            <textarea id="appendCommand" readonly></textarea>
+            <button id="copyCommand">Copy Command</button>
+        </div>
+    </div>
     <script src="javascript.js"></script>
 </body>
 </html>
