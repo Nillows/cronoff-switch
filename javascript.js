@@ -83,10 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let capitalizedAliasName = aliasName.charAt(0).toUpperCase() + aliasName.slice(1);
 
         // Build the 'off' alias
-        let offAlias = "alias " + aliasName + "off='crontab -l | awk '\\''/^#/{print;next}/^" + escapedCronJobForAwk + "$/{print \"#\" $0;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^#" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + capitalizedAliasName + " has been disabled.\"; else echo \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
+        let offAlias = "alias " + aliasName + "off='crontab -l | awk '\\''/^#/{print;next}/^" + escapedCronJobForAwk + "$/{print \"#\" $0;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^#" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; printf \"" + capitalizedAliasName + " has been disabled.\"; else printf \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
 
         // Build the 'on' alias
-        let onAlias = "alias " + aliasName + "on='crontab -l | awk '\\''/^#" + escapedCronJobForAwk + "$/{sub(/^#/,\"\",$0);print;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + capitalizedAliasName + " has been enabled.\"; else echo \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
+        let onAlias = "alias " + aliasName + "on='crontab -l | awk '\\''/^#" + escapedCronJobForAwk + "$/{sub(/^#/,\"\",$0);print;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; printf \"" + capitalizedAliasName + " has been enabled.\"; else printf \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
 
         // Combine the aliases
         let aliasText = offAlias + "\n\n" + onAlias;
