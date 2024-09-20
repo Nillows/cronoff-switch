@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cronjob Alias Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label, input, textarea, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        textarea {
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cronjob Alias Generator</h1>
+    <label for="cronjob">Cron Job Input:</label>
+    <input type="text" id="cronjob" placeholder="Enter your cron job string">
+    <label for="aliasname">Alias Name:</label>
+    <input type="text" id="aliasname" placeholder="Enter the alias name">
+    <button id="generate">Generate</button>
+    <label for="output">Generated Aliases:</label>
+    <textarea id="output" readonly></textarea>
+
+    <script src="javascript.js"></script>
+</body>
+</html>
