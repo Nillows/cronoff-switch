@@ -38,40 +38,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Function to send the aliases to Hastebin and get the URL.
+     * Function to send the aliases to 0x0.st and get the URL.
      * @param {string} aliasText - The alias text to send.
      * @return {Promise<string>} - A promise that resolves to the Hastebin raw URL.
      */
-    function sendToHastebin(aliasText) {
-        return new Promise(function(resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'https://www.toptal.com/developers/hastebin/documents', true);
-            xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
+function sendToPasteService(aliasText) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://0x0.st', true);
+        xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
 
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        try {
-                            var response = JSON.parse(xhr.responseText);
-                            var key = response.key;
-                            var rawUrl = 'https://www.toptal.com/developers/hastebin/raw/' + key;
-                            resolve(rawUrl);
-                        } catch (e) {
-                            reject('Failed to parse Hastebin response.');
-                        }
-                    } else {
-                        reject('Error posting to Hastebin: ' + xhr.statusText);
-                    }
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var rawUrl = xhr.responseText.trim();
+                    resolve(rawUrl);
+                } else {
+                    reject('Error posting to 0x0.st: ' + xhr.statusText);
                 }
-            };
+            }
+        };
 
-            xhr.onerror = function() {
-                reject('Network error while posting to Hastebin.');
-            };
+        xhr.onerror = function() {
+            reject('Network error while posting to 0x0.st.');
+        };
 
-            xhr.send(aliasText);
-        });
-    }
+        xhr.send(aliasText);
+    });
+}
+
 
     /**
      * Main function to generate the 'on' and 'off' aliases based on user input.
@@ -112,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
         outputArea.value = aliasText;
 
         // Send the alias text to Hastebin and get the raw URL
-        sendToHastebin(aliasText)
+        sendToPasteService(aliasText)
             .then(function(rawUrl) {
                 // Construct the curl command
                 let curlCommand = 'curl -L ' + rawUrl + ' >> ~/.bashrc';
