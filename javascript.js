@@ -1,10 +1,9 @@
-// Wait for the entire HTML document to be loaded before running the script
 document.addEventListener('DOMContentLoaded', function() {
-    // Get references to the input fields and output area in the HTML
     const cronjobInput = document.getElementById('cronjob');       // Cron job input field
     const aliasnameInput = document.getElementById('aliasname');   // Alias name input field
     const generateButton = document.getElementById('generate');    // Generate button
     const outputArea = document.getElementById('output');          // Output textarea
+    const curlCommandArea = document.getElementById('curlcommand'); // Curl command output area
 
     /**
      * Function to escape special characters for use in an awk regular expression.
@@ -39,12 +38,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Function to send the aliases to Hastebin and get the URL.
+     * @param {string} aliasText - The alias text to send.
+     * @return {Promise<string>} - A promise that resolves to the Hastebin raw URL.
+     */
+    function sendToHastebin(aliasText) {
+        return new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://www.toptal.com/developers/hastebin/documents', true);
+            xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            var key = response.key;
+                            var rawUrl = 'https://www.toptal.com/developers/hastebin/raw/' + key;
+                            resolve(rawUrl);
+                        } catch (e) {
+                            reject('Failed to parse Hastebin response.');
+                        }
+                    } else {
+                        reject('Error posting to Hastebin: ' + xhr.statusText);
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                reject('Network error while posting to Hastebin.');
+            };
+
+            xhr.send(aliasText);
+        });
+    }
+
+    /**
      * Main function to generate the 'on' and 'off' aliases based on user input.
      */
     function generateAliases() {
         // Retrieve and trim the values from the input fields
         let cronJob = cronjobInput.value.trim();       // User-provided cron job string
         let aliasName = aliasnameInput.value.trim();   // User-provided alias name
+
+        // Clear previous outputs
+        outputArea.value = '';
+        curlCommandArea.value = '';
 
         // Check if both inputs are provided
         if (!cronJob || !aliasName) {
@@ -66,8 +105,24 @@ document.addEventListener('DOMContentLoaded', function() {
                       "if grep -q \"^" + escapedCronJobForGrep + "\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + aliasName + " is now on\"; " +
                       "else echo \"" + aliasName + " is already on\"; fi'";
 
+        // Combine the aliases
+        let aliasText = offAlias + "\n\n" + onAlias;
+
         // Display the generated alias commands in the output textarea
-        outputArea.value = offAlias + "\n\n" + onAlias;
+        outputArea.value = aliasText;
+
+        // Send the alias text to Hastebin and get the raw URL
+        sendToHastebin(aliasText)
+            .then(function(rawUrl) {
+                // Construct the curl command
+                let curlCommand = 'curl -L ' + rawUrl + ' >> ~/.bashrc';
+
+                // Display the curl command in the curlCommandArea
+                curlCommandArea.value = curlCommand;
+            })
+            .catch(function(error) {
+                curlCommandArea.value = 'Error: ' + error;
+            });
     }
 
     // Add an event listener to the 'Generate' button to trigger alias generation on click
