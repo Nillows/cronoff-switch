@@ -3,70 +3,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const aliasnameInput = document.getElementById('aliasname');   // Alias name input field
     const generateButton = document.getElementById('generate');    // Generate button
     const outputArea = document.getElementById('output');          // Output textarea
-    const curlCommandArea = document.getElementById('curlcommand'); // Curl command output area
 
     /**
-     * Function to escape special characters for use in an awk regular expression.
+     * Function to escape special characters for use in an Awk regular expression.
      * This ensures that characters like *, ?, [, ], etc., are treated literally.
      * @param {string} str - The string to be escaped.
      * @return {string} - The escaped string.
      */
     function escapeForAwkRegex(str) {
-        // Use a regular expression to find special regex characters and escape them
-        return str.replace(/[\\^$.*+?()[\]{}|\/]/g, '\\$&');
+        // Escape backslashes and forward slashes
+        str = str.replace(/[\\\/]/g, '\\$&');
+        // Escape special regex characters
+        return str.replace(/[\^\$\.\*\+\?\(\)\[\]\{\}\|]/g, '\\$&');
     }
 
     /**
-     * Function to escape special characters for use in a grep command.
-     * This ensures that characters like \, *, ?, [, ], etc., are properly escaped.
+     * Function to escape special characters for use in a Grep pattern.
+     * Escapes backslashes, forward slashes, and double quotes.
      * @param {string} str - The string to be escaped.
      * @return {string} - The escaped string.
      */
     function escapeForGrep(str) {
-        return str
-            .replace(/\\/g, '\\\\')    // Escape backslashes
-            .replace(/"/g, '\\"')      // Escape double quotes
-            .replace(/\$/g, '\\$')     // Escape dollar signs
-            .replace(/\^/g, '\\^')     // Escape caret symbols
-            .replace(/\*/g, '\\*')     // Escape asterisks
-            .replace(/\./g, '\\.')     // Escape dots
-            .replace(/\//g, '\\/')     // Escape slashes
-            .replace(/\[/g, '\\[')     // Escape opening square brackets
-            .replace(/\]/g, '\\]')     // Escape closing square brackets
-            .replace(/\?/g, '\\?')     // Escape question marks
-            .replace(/\+/g, '\\+');    // Escape plus signs
+        return str.replace(/([\\\/\*\?\+\[\]\^\$\.\|\{\}\(\)])/g, '\\$1').replace(/"/g, '\\"');
     }
-
-    /**
-     * Function to send the aliases to 0x0.st and get the URL.
-     * @param {string} aliasText - The alias text to send.
-     * @return {Promise<string>} - A promise that resolves to the Hastebin raw URL.
-     */
-function sendToPasteService(aliasText) {
-    return new Promise(function(resolve, reject) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://0x0.st', true);
-        xhr.setRequestHeader('Content-Type', 'text/plain; charset=UTF-8');
-
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    var rawUrl = xhr.responseText.trim();
-                    resolve(rawUrl);
-                } else {
-                    reject('Error posting to 0x0.st: ' + xhr.statusText);
-                }
-            }
-        };
-
-        xhr.onerror = function() {
-            reject('Network error while posting to 0x0.st.');
-        };
-
-        xhr.send(aliasText);
-    });
-}
-
 
     /**
      * Main function to generate the 'on' and 'off' aliases based on user input.
@@ -78,7 +37,6 @@ function sendToPasteService(aliasText) {
 
         // Clear previous outputs
         outputArea.value = '';
-        curlCommandArea.value = '';
 
         // Check if both inputs are provided
         if (!cronJob || !aliasName) {
@@ -86,38 +44,21 @@ function sendToPasteService(aliasText) {
             return; // Exit the function if inputs are missing
         }
 
-        // Escape the cron job string for use in awk and grep commands
-        let escapedCronJobForAwk = escapeForAwkRegex(cronJob); // Escaped for awk regex
-        let escapedCronJobForGrep = escapeForGrep(cronJob);    // Escaped for grep
+        // Escape the cron job string for use in Awk and Grep patterns
+        let escapedCronJobForAwk = escapeForAwkRegex(cronJob);
+        let escapedCronJobForGrep = escapeForGrep(cronJob);
 
-        // Construct the 'off' alias command
-        let offAlias = "alias " + aliasName + "off='crontab -l | awk '\\''/^#/{print;next}/" + escapedCronJobForAwk + "/{print \"#\" $0;next}1'\\'' > /tmp/crontab.txt && " +
-                       "if grep -q \"^" + escapedCronJobForGrep + "\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + aliasName + " is now off\"; " +
-                       "else echo \"" + aliasName + " is already off\"; fi'";
+        // Capitalize the alias name for messages
+        let capitalizedAliasName = aliasName.charAt(0).toUpperCase() + aliasName.slice(1);
 
-        // Construct the 'on' alias command
-        let onAlias = "alias " + aliasName + "on='crontab -l | awk '\\''/^#" + escapedCronJobForAwk + "/{sub(/^#/,\"\",$0);print;next}1'\\'' > /tmp/crontab.txt && " +
-                      "if grep -q \"^" + escapedCronJobForGrep + "\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + aliasName + " is now on\"; " +
-                      "else echo \"" + aliasName + " is already on\"; fi'";
+        // Build the 'off' alias
+        let offAlias = "alias " + aliasName + "off='crontab -l | awk '\\''/^#/{print;next}/^" + escapedCronJobForAwk + "$/{print \"#\" $0;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^#" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + capitalizedAliasName + " has been disabled.\"; else echo \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
 
-        // Combine the aliases
-        let aliasText = offAlias + "\n\n" + onAlias;
+        // Build the 'on' alias
+        let onAlias = "alias " + aliasName + "on='crontab -l | awk '\\''/^#" + escapedCronJobForAwk + "$/{sub(/^#/,\"\",$0);print;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + capitalizedAliasName + " has been enabled.\"; else echo \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
 
         // Display the generated alias commands in the output textarea
-        outputArea.value = aliasText;
-
-        // Send the alias text to Hastebin and get the raw URL
-        sendToPasteService(aliasText)
-            .then(function(rawUrl) {
-                // Construct the curl command
-                let curlCommand = 'curl -L ' + rawUrl + ' >> ~/.bashrc';
-
-                // Display the curl command in the curlCommandArea
-                curlCommandArea.value = curlCommand;
-            })
-            .catch(function(error) {
-                curlCommandArea.value = 'Error: ' + error;
-            });
+        outputArea.value = offAlias + "\n\n" + onAlias;
     }
 
     // Add an event listener to the 'Generate' button to trigger alias generation on click
