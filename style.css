@@ -1,0 +1,133 @@
+/* style.css */
+
+/* Global Styles */
+body {
+    background-color: #f0f4f8;
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-top: 20px;
+}
+
+/* Container */
+.container {
+    display: flex;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Left Side */
+.left-side {
+    flex: 1;
+    padding-right: 20px;
+    border-right: 1px solid #dde1e7;
+}
+
+.left-side label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.left-side textarea,
+.left-side input[type="text"] {
+    width: 100%;
+    font-size: 14x;
+    padding: 10px;
+    border: 1px solid #ccd1d9;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: monospace;
+    resize: vertical;
+}
+
+.left-side button {
+    margin-top: 15px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.left-side button:hover {
+    background-color: #2980b9;
+}
+
+/* Right Side */
+.right-side {
+    flex: 1;
+    padding-left: 20px;
+}
+
+.right-side label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.right-side textarea {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px;
+    border: 1px solid #ccd1d9;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: monospace;
+    min-height: 150px;
+    resize: vertical;
+}
+
+.right-side button {
+    margin-top: 10px;
+    background-color: #2ecc71;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.right-side button:hover {
+    background-color: #27ae60;
+}
+
+.ol {
+    font-size: 13px;
+    margin-left: 0;
+    padding-left: 1.2em; /* Adjust this value as needed */
+}
+
+/* Responsive Design */
+@media (max-width: 800px) {
+    .container {
+        flex-direction: column;
+    }
+    .left-side, .right-side {
+        padding: 0;
+        border: none;
+    }
+    .left-side button, .right-side button {
+        width: 100%;
+    }
+    .right-side {
+        margin-top: 20px;
+    }
+}
