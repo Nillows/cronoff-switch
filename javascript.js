@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         outputArea.value = aliasText;
 
         // Generate the command to append aliases to .bashrc
-        let appendCommand = "cat >> ~/.bashrc << 'END_OF_ALIASES'\n" + aliasText + "\nEND_OF_ALIASES";
+        let appendCommand = "printf '\\n' >> ~/.bashrc && cat >> ~/.bashrc << 'END_OF_ALIASES'\n" + aliasText + "\nEND_OF_ALIASES";
 
         // Display the command in the appendCommandArea
         appendCommandArea.value = appendCommand;
