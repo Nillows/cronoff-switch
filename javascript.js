@@ -1,8 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const cronjobInput = document.getElementById('cronjob');       // Cron job input field
-    const aliasnameInput = document.getElementById('aliasname');   // Alias name input field
-    const generateButton = document.getElementById('generate');    // Generate button
-    const outputArea = document.getElementById('output');          // Output textarea
+    const cronjobInput = document.getElementById('cronjob');          // Cron job input field
+    const aliasnameInput = document.getElementById('aliasname');      // Alias name input field
+    const generateButton = document.getElementById('generate');       // Generate button
+    const outputArea = document.getElementById('output');             // Output textarea
+    const copyAliasesButton = document.getElementById('copyAliases'); // Copy Aliases button
+    const appendCommandArea = document.getElementById('appendCommand'); // Command to append aliases
+    const copyCommandButton = document.getElementById('copyCommand'); // Copy Command button
 
     /**
      * Function to escape special characters for use in an Awk regular expression.
@@ -28,6 +31,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Function to copy text to the clipboard and update the button text
+     * @param {string} text - The text to copy to the clipboard
+     * @param {HTMLElement} button - The button that was clicked
+     */
+    function copyToClipboard(text, button) {
+        navigator.clipboard.writeText(text)
+            .then(function() {
+                // Change the button text to 'Copied!'
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.disabled = true; // Disable the button temporarily
+                // After 2 seconds, reset the button text
+                setTimeout(function() {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 2000);
+            })
+            .catch(function(err) {
+                console.error('Failed to copy to clipboard: ', err);
+            });
+    }
+
+    /**
      * Main function to generate the 'on' and 'off' aliases based on user input.
      */
     function generateAliases() {
@@ -37,6 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Clear previous outputs
         outputArea.value = '';
+        appendCommandArea.value = '';
+
+        // Reset copy buttons text
+        copyAliasesButton.textContent = 'Copy Aliases';
+        copyCommandButton.textContent = 'Copy Command';
 
         // Check if both inputs are provided
         if (!cronJob || !aliasName) {
@@ -57,17 +88,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Build the 'on' alias
         let onAlias = "alias " + aliasName + "on='crontab -l | awk '\\''/^#" + escapedCronJobForAwk + "$/{sub(/^#/,\"\",$0);print;next}1'\\'' > /tmp/crontab.txt && if grep -q \"^" + escapedCronJobForGrep + "$\" /tmp/crontab.txt; then crontab /tmp/crontab.txt; echo \"" + capitalizedAliasName + " has been enabled.\"; else echo \"Crontab task not found!\"; fi && rm /tmp/crontab.txt'";
 
+        // Combine the aliases
+        let aliasText = offAlias + "\n\n" + onAlias;
+
         // Display the generated alias commands in the output textarea
-        outputArea.value = offAlias + "\n\n" + onAlias;
+        outputArea.value = aliasText;
+
+        // Generate the command to append aliases to .bashrc
+        let appendCommand = "cat >> ~/.bashrc << 'END_OF_ALIASES'\n" + aliasText + "\nEND_OF_ALIASES";
+
+        // Display the command in the appendCommandArea
+        appendCommandArea.value = appendCommand;
+
+        // Reset the copy buttons text (in case they were showing 'Copied!')
+        copyAliasesButton.textContent = 'Copy Aliases';
+        copyAliasesButton.disabled = false;
+        copyCommandButton.textContent = 'Copy Command';
+        copyCommandButton.disabled = false;
     }
 
     // Add an event listener to the 'Generate' button to trigger alias generation on click
     generateButton.addEventListener('click', generateAliases);
 
-    // Add an event listener for keypress events to trigger alias generation on 'Enter' keypress
-    document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') { // Check if the pressed key is 'Enter'
-            generateAliases();   // Call the function to generate aliases
-        }
+    // Add event listener to 'Copy Aliases' button
+    copyAliasesButton.addEventListener('click', function() {
+        copyToClipboard(outputArea.value, copyAliasesButton);
+    });
+
+    // Add event listener to 'Copy Command' button
+    copyCommandButton.addEventListener('click', function() {
+        copyToClipboard(appendCommandArea.value, copyCommandButton);
     });
 });
